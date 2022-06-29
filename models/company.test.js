@@ -60,7 +60,8 @@ describe("create", function () {
 
 describe("findAll", function () {
   test("works: no filter", async function () {
-    let companies = await Company.findAll();
+    let q = {};
+    let companies = await Company.findAll(q);
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -82,6 +83,145 @@ describe("findAll", function () {
         description: "Desc3",
         numEmployees: 3,
         logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+  test("works: query for name params", async function () {
+    let q = {name: "C1"};
+    let companies = await Company.findAll(q);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      }
+    ]);
+  });
+  test("works: query for minEmployees param", async function () {
+    let q = {minEmployees: "3"};
+    let companies = await Company.findAll(q);
+    expect(companies).toEqual([
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+  test("works: query for maxEmployees param", async function () {
+    let q = {maxEmployees: "1"};
+    let companies = await Company.findAll(q);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      }
+    ]);
+  });
+  test("works: name query is case-insensitive", async function () {
+    let q = {name: "c"};
+    let companies = await Company.findAll(q);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+  test("404: name query doesn't exist", async function () {
+    let q = {name: "uueyegg"};
+    try {
+      await Company.findAll(q);
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+  test("404: minEmployees query not found", async function () {
+    let q = {minEmployees: 999};
+    try {
+      await Company.findAll(q);
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+  test("404: maxEmployees query not found", async function () {
+    let q = {maxEmployees: 0};
+    try {
+      await Company.findAll(q);
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+  test("works: name + minEmployees search found", async function () {
+    let q = {name: "c", minEmployees: 3};
+    let companies = await Company.findAll(q);
+    expect(companies).toEqual([
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+  test("works: name + maxEmployees search found", async function () {
+    let q = {name: "c", maxEmployees: 1};
+    let companies = await Company.findAll(q);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      }
+    ]);
+  });
+  test("works: companies between minEmployees + maxEmployees range found", async function () {
+    let q = {name: "c", minEmployees: 1, maxEmployees: 2};
+    let companies = await Company.findAll(q);
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
       },
     ]);
   });

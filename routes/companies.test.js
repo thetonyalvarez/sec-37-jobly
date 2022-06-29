@@ -135,7 +135,7 @@ describe("GET /companies", function () {
     });
   });
 
-  test("name query is case-insensitive", async function () {
+  test("works: name query is case-insensitive", async function () {
     const resp = await request(app).get("/companies?name=c");
     expect(resp.body).toEqual({
       companies:
@@ -187,7 +187,7 @@ describe("GET /companies", function () {
     });
   });
 
-  test("minEmployees query not found", async function () {
+  test("404: minEmployees query not found", async function () {
     // company with minimum 99 employees not found
     const resp = await request(app).get("/companies?minEmployees=99");
     expect(resp.statusCode).toEqual(404)
@@ -209,13 +209,13 @@ describe("GET /companies", function () {
     });
   });
 
-  test("maxEmployees query not found", async function () {
+  test("404: maxEmployees query not found", async function () {
     // company with max 0 employees not found
     const resp = await request(app).get("/companies?maxEmployees=0");
     expect(resp.statusCode).toEqual(404)
   });
 
-  test("name + minEmployee search found", async function () {
+  test("works: name + minEmployees search found", async function () {
     const resp = await request(app).get("/companies?name=C1&minEmployees=1");
     expect(resp.body).toEqual({
       companies:
@@ -231,7 +231,7 @@ describe("GET /companies", function () {
     });
   });
 
-  test("name + maxEmployee search found", async function () {
+  test("works: name + maxEmployees search found", async function () {
     const resp = await request(app).get("/companies?name=C1&maxEmployees=1");
     expect(resp.body).toEqual({
       companies:
@@ -247,7 +247,7 @@ describe("GET /companies", function () {
     });
   });
 
-  test("companies between minEmployee + maxEmployee range found", async function () {
+  test("works: companies between minEmployees + maxEmployees range found", async function () {
     const resp = await request(app).get("/companies?minEmployees=1&maxEmployees=3");
     expect(resp.body).toEqual({
       companies:

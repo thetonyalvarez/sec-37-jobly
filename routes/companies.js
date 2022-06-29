@@ -54,6 +54,8 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 router.get("/", async function (req, res, next) {
   let q = req.query
 
+  console.log("q", q)
+
   // convert query param string to integers
   if (q.minEmployees !== undefined) {
     q.minEmployees = Number(q.minEmployees)
