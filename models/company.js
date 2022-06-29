@@ -44,8 +44,18 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
+  /** Queries all companies.
    *
+   * If query exists, it is first validated by companySearch schema.
+   * If query is validated, then it returns results based on query filters.
+   * 
+   * Query can include any or all of the following:
+   * - name [string]: search for partial or full matches of company name
+   * - minEmployees [int]: search for companies that have at least this many employees
+   * - maxEmployees [int]: search for companies that have at most this many employees
+   * 
+   * If no query, then return all companies in database.
+   * 
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
