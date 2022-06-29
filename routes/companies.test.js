@@ -106,6 +106,177 @@ describe("GET /companies", function () {
         .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(500);
   });
+
+  test("invalid query validation", async function () {
+    // username is not part of CompanyUpdate schema
+    const resp = await request(app).get("/companies?username=C2");
+    expect(() => resp).toThrowError
+  });
+
+  test("error: maxEmployees is less than minEmployees", async function () {
+    // username is not part of CompanyUpdate schema
+    const resp = await request(app).get("/companies?minEmployees=10&maxEmployees=1");
+    expect(() => resp).toThrowError
+  });
+
+  test("works: query for name param", async function () {
+    const resp = await request(app).get("/companies?name=C2");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c2",
+              name: "C2",
+              description: "Desc2",
+              numEmployees: 2,
+              logoUrl: "http://c2.img",
+            }
+          ],
+    });
+  });
+
+  test("name query is case-insensitive", async function () {
+    const resp = await request(app).get("/companies?name=c");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
+            },
+            {
+              handle: "c2",
+              name: "C2",
+              description: "Desc2",
+              numEmployees: 2,
+              logoUrl: "http://c2.img",
+            },
+            {
+              handle: "c3",
+              name: "C3",
+              description: "Desc3",
+              numEmployees: 3,
+              logoUrl: "http://c3.img",
+            },
+          ]
+    });
+  });
+
+  test("404: name query doesn't exist", async function () {
+    // company name cannot be found
+    const resp = await request(app).get("/companies?name=uuywew");
+    expect(resp.statusCode).toEqual(404)
+  });
+
+  test("works: query for minEmployees param", async function () {
+    const resp = await request(app).get("/companies?minEmployees=3");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c3",
+              name: "C3",
+              numEmployees: 3,
+              description: "Desc3",
+              logoUrl: "http://c3.img"
+            }
+          ],
+    });
+  });
+
+  test("minEmployees query not found", async function () {
+    // company with minimum 99 employees not found
+    const resp = await request(app).get("/companies?minEmployees=99");
+    expect(resp.statusCode).toEqual(404)
+  });
+
+  test("works: query for maxEmployees param", async function () {
+    const resp = await request(app).get("/companies?maxEmployees=1");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              numEmployees: 1,
+              description: "Desc1",
+              logoUrl: "http://c1.img",
+            }
+          ],
+    });
+  });
+
+  test("maxEmployees query not found", async function () {
+    // company with max 0 employees not found
+    const resp = await request(app).get("/companies?maxEmployees=0");
+    expect(resp.statusCode).toEqual(404)
+  });
+
+  test("name + minEmployee search found", async function () {
+    const resp = await request(app).get("/companies?name=C1&minEmployees=1");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              numEmployees: 1,
+              description: "Desc1",
+              logoUrl: "http://c1.img",
+            }
+          ],
+    });
+  });
+
+  test("name + maxEmployee search found", async function () {
+    const resp = await request(app).get("/companies?name=C1&maxEmployees=1");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              numEmployees: 1,
+              description: "Desc1",
+              logoUrl: "http://c1.img",
+            }
+          ],
+    });
+  });
+
+  test("companies between minEmployee + maxEmployee range found", async function () {
+    const resp = await request(app).get("/companies?minEmployees=1&maxEmployees=3");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              numEmployees: 1,
+              description: "Desc1",
+              logoUrl: "http://c1.img",
+            },
+            {
+              handle: "c2",
+              name: "C2",
+              description: "Desc2",
+              numEmployees: 2,
+              logoUrl: "http://c2.img",
+            },
+            {
+              handle: "c3",
+              name: "C3",
+              description: "Desc3",
+              numEmployees: 3,
+              logoUrl: "http://c3.img",
+            }
+          ]
+    });
+  })
+
 });
 
 /************************************** GET /companies/:handle */
