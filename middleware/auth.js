@@ -35,15 +35,31 @@ function authenticateJWT(req, res, next) {
 
 function ensureLoggedIn(req, res, next) {
   try {
-    if (!res.locals.user) throw new UnauthorizedError();
+    if (!res.locals.user) throw new UnauthorizedError("Unauthorized", 401);
     return next();
   } catch (err) {
     return next(err);
   }
 }
 
+/** Require admin user.
+ * 
+ * If not, raise 401.
+ */
+
+function ensureAdmin(req, res, next) {
+  try {
+    console.log('res', !res.locals.user)
+    if (!res.locals.user || !res.locals.user.isAdmin) throw new UnauthorizedError("Unauthorized", 401);
+		return next();
+  } catch (err) {
+		return next(err);
+	}
+}
+
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
+  ensureAdmin
 };
