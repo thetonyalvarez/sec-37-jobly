@@ -49,7 +49,6 @@ function ensureLoggedIn(req, res, next) {
 
 function ensureAdmin(req, res, next) {
   try {
-    console.log('res', !res.locals.user)
     if (!res.locals.user || !res.locals.user.isAdmin) throw new UnauthorizedError("Unauthorized", 401);
 		return next();
   } catch (err) {
@@ -57,9 +56,27 @@ function ensureAdmin(req, res, next) {
 	}
 }
 
+/** Require curr user = target user, or admin user.
+ * 
+ * If not, raise 401.
+ */
+function ensureMatchingUserOrAdmin(req, res, next) {
+  let reqUser = req.params.username
+  let currUser = res.locals.user
+  try {
+    if (!(currUser && (currUser.isAdmin || reqUser == currUser.username))) {
+      throw new UnauthorizedError("Unauthorized", 401)
+    } 
+    return next();
+  } catch (err) {
+		return next(err);
+  }
+}
+
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  ensureAdmin
+  ensureAdmin,
+  ensureMatchingUserOrAdmin
 };
