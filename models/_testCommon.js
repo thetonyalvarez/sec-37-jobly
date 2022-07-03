@@ -11,6 +11,8 @@ async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM jobs");
 
+  await db.query("DELETE FROM applications");
+
   await db.query("SELECT setval('jobs_id_seq', 1, false);");
 
   await db.query(`

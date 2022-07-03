@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "http://example.com/userApply.json",
+  "type": "object",
+  "required": [
+      "username",
+      "job_id"
+  ],
+  "properties": {
+      "username": {
+          "type": "string",
+          "default": "",
+          "title": "The username Schema",
+          "examples": [
+              "u1"
+          ]
+      },
+      "job_id": {
+          "type": "string",
+          "pattern": "[0-9]",
+          "examples": ["1"]
+      }
+  },
+  "examples": [{
+      "username": "u1",
+      "job_id": 1
+  }]
+}

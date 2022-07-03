@@ -320,6 +320,38 @@ describe("PATCH /users/:username", () => {
   });
 });
 
+/************************************** POST /users/:username/jobs/:job_id */
+
+describe("POST /users/:username/jobs/:job_id", () => {
+  test("works for admins", async () => { 
+    const resp = await request(app)
+      .post(`/users/u1/jobs/1`)
+      .set("authorization", `Bearer ${u2TokenAdmin}`);
+    expect(resp.body).toEqual({ applied: 1 })
+  });
+
+  test("works for matching logged-in user (non-admin)", async () => { 
+    const resp = await request(app)
+      .post(`/users/u1/jobs/1`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({ applied: 1 })
+  });
+
+  test("unauth for non-matching logged-in user (non-admin)", async () => { 
+    const resp = await request(app)
+      .post(`/users/u2/jobs/1`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+  
+  test("unauth for anon user", async () => { 
+    const resp = await request(app)
+      .post(`/users/u1/jobs/1`)
+    expect(resp.statusCode).toEqual(401);
+  });
+  
+})
+
 /************************************** DELETE /users/:username */
 
 describe("DELETE /users/:username", function () {
