@@ -25,15 +25,14 @@ class Job {
       [title, salary, equity, company_handle]
     );
     const job = result.rows[0];
-    console.log(job);
 
     return job;
   }
-
+  // TODO: add jobSearch schema.
   /** Queries all jobs.
    *
    * If query exists, it is first validated by jobSearch schema.
-   * TODO: add jobSearch schema.
+   *
    * If query is validated, then it returns results based on query filters.
    *
    * Query can include any or all of the following:
