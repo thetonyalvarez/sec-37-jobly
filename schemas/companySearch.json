@@ -1,40 +1,35 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "http://our.company.com/companySearch.schema.json",
-    "type": "object",
-    "default": {},
-    "title": "Root Schema",
-    "required": [
-    ],
-    "properties": {
-        "name": {
-            "type": "string",
-            "default": "",
-            "title": "The name Schema",
-            "examples": [
-                "acme"
-            ]
-        },
-        "minEmployees": {
-            "type": "integer",
-            "default": 0,
-            "title": "The minEmployees Schema",
-            "examples": [
-                0
-            ]
-        },
-        "maxEmployees": {
-            "type": "integer",
-            "default": 0,
-            "title": "The maxEmployees Schema",
-            "examples": [
-                99
-            ]
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://our.company.com/companySearch.schema.json",
+  "type": "object",
+  "default": {},
+  "title": "Root Schema",
+  "required": [],
+  "properties": {
+    "name": {
+      "type": "string",
+      "default": "",
+      "title": "The name Schema",
+      "examples": ["acme"]
     },
-    "examples": [{
-        "name": "acme",
-        "minEmployees": 0,
-        "maxEmployees": 99
-    }]
+    "minEmployees": {
+      "type": "integer",
+      "default": 0,
+      "title": "The minEmployees Schema",
+      "examples": [0]
+    },
+    "maxEmployees": {
+      "type": "integer",
+      "default": 0,
+      "title": "The maxEmployees Schema",
+      "examples": [99]
+    }
+  },
+  "examples": [
+    {
+      "name": "acme",
+      "minEmployees": 0,
+      "maxEmployees": 99
+    }
+  ]
 }

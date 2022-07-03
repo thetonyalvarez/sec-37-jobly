@@ -10,8 +10,8 @@ const { ensureLoggedIn, ensureAdmin } = require("../middleware/auth");
 const Job = require("../models/job");
 
 const jobNewSchema = require("../schemas/jobNew.json");
-// const jobUpdateSchema = require("../schemas/jobUpdate.json");
-// const jobSearchSchema = require("../schemas/jobSearch.json");
+const jobSearchSchema = require("../schemas/jobSearch.json");
+const jobUpdateSchema = require("../schemas/jobUpdate.json");
 
 const router = new express.Router();
 
@@ -27,7 +27,6 @@ const router = new express.Router();
 router.post("/", ensureAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, jobNewSchema);
-    console.log("JOB", typeof req.body.equity);
 
     if (!validator.valid) {
       const errs = validator.errors.map((e) => e.stack);
@@ -41,100 +40,108 @@ router.post("/", ensureAdmin, async function (req, res, next) {
   }
 });
 
-// /** GET /  =>
-//  *   { companies: [ { handle, name, description, numEmployees, logoUrl }, ...] }
-//  *
-//  * Can filter on provided search filters:
-//  * - minEmployees
-//  * - maxEmployees
-//  * - nameLike (will find case-insensitive, partial matches)
-//  *
-//  * Authorization required: none
-//  */
+/** GET /  =>
+ *   { jobs: [ { id, title, salary, equity, company_handle }, ...] }
+ *
+ * Authorization required: none
+ */
 
-// router.get("/", async function (req, res, next) {
-//   let q = req.query;
+router.get("/", async function (req, res, next) {
+  let q = req.query;
 
-//   console.log("q", q);
+  // // convert query param string to integers
+  if (q.salary !== undefined) {
+    q.salary = Number(q.salary);
+  }
 
-//   // convert query param string to integers
-//   if (q.minEmployees !== undefined) {
-//     q.minEmployees = Number(q.minEmployees);
-//   }
-//   if (q.maxEmployees !== undefined) {
-//     q.maxEmployees = Number(q.maxEmployees);
-//   }
+  try {
+    // ensure query is validated using jobSearch schema
+    const validator = jsonschema.validate(req.query, jobSearchSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map((e) => e.stack);
+      throw new BadRequestError(errs);
+    }
+    // pass query variable 'q' to sql query function
+    const jobs = await Job.findAll(q);
+    return res.json({ jobs });
+  } catch (err) {
+    return next(err);
+  }
+});
 
-//   try {
-//     // ensure query is validated using companySearch schema
-//     const validator = jsonschema.validate(req.query, companySearchSchema);
-//     if (!validator.valid) {
-//       const errs = validator.errors.map((e) => e.stack);
-//       throw new BadRequestError(errs);
-//     }
-//     // pass query variable 'q' to sql query function
-//     const companies = await Company.findAll(q);
-//     return res.json({ companies });
-//   } catch (err) {
-//     return next(err);
-//   }
-// });
+/** GET /[id]  =>  { job }
+ *
+ *  Job is { title, salary, equity, company_handle }
+ *
+ * Authorization required: none
+ */
 
-// /** GET /[handle]  =>  { company }
-//  *
-//  *  Company is { handle, name, description, numEmployees, logoUrl, jobs }
-//  *   where jobs is [{ id, title, salary, equity }, ...]
-//  *
-//  * Authorization required: none
-//  */
+router.get("/:id", async function (req, res, next) {
+  try {
+    // ensure query is validated using jobSearch schema
+    const validator = jsonschema.validate(req.params, jobSearchSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map((e) => e.stack);
+      throw new BadRequestError(errs);
+    }
 
-// router.get("/:handle", async function (req, res, next) {
-//   try {
-//     const company = await Company.get(req.params.handle);
-//     return res.json({ company });
-//   } catch (err) {
-//     return next(err);
-//   }
-// });
+    const job = await Job.get(req.params.id);
+    return res.json({ job });
+  } catch (err) {
+    return next(err);
+  }
+});
 
-// /** PATCH /[handle] { fld1, fld2, ... } => { company }
-//  *
-//  * Patches company data.
-//  *
-//  * fields can be: { name, description, numEmployees, logo_url }
-//  *
-//  * Returns { handle, name, description, numEmployees, logo_url }
-//  *
-//  * Authorization required: login
-//  */
+/** PATCH /[id] { fld1, fld2, ... } => { company }
+ *
+ * Patches job data.
+ *
+ * fields can be: { title, salary, equity, company_handle}
+ *
+ * Returns { title, salary, equity, company_handle }
+ *
+ * Authorization required: admin login
+ */
 
-// router.patch("/:handle", ensureAdmin, async function (req, res, next) {
-//   try {
-//     const validator = jsonschema.validate(req.body, companyUpdateSchema);
-//     if (!validator.valid) {
-//       const errs = validator.errors.map((e) => e.stack);
-//       throw new BadRequestError(errs);
-//     }
+router.patch("/:id", ensureAdmin, async function (req, res, next) {
+  try {
+    // ensure query is validated using jobSearch schema
+    const validator_id = jsonschema.validate(req.params, jobSearchSchema);
+    if (!validator_id.valid) {
+      const errs = validator_id.errors.map((e) => e.stack);
+      throw new BadRequestError(errs);
+    }
 
-//     const company = await Company.update(req.params.handle, req.body);
-//     return res.json({ company });
-//   } catch (err) {
-//     return next(err);
-//   }
-// });
+    const validator = jsonschema.validate(req.body, jobUpdateSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map((e) => e.stack);
+      throw new BadRequestError(errs);
+    }
 
-// /** DELETE /[handle]  =>  { deleted: handle }
-//  *
-//  * Authorization: login
-//  */
+    const job = await Job.update(req.params.id, req.body);
+    return res.json({ job });
+  } catch (err) {
+    return next(err);
+  }
+});
 
-// router.delete("/:handle", ensureAdmin, async function (req, res, next) {
-//   try {
-//     await Company.remove(req.params.handle);
-//     return res.json({ deleted: req.params.handle });
-//   } catch (err) {
-//     return next(err);
-//   }
-// });
+/** DELETE /[id]  =>  { deleted: id }
+ *
+ * Authorization: login
+ */
+
+router.delete("/:id", ensureAdmin, async function (req, res, next) {
+  try {
+    const validator_id = jsonschema.validate(req.params, jobSearchSchema);
+    if (!validator_id.valid) {
+      const errs = validator_id.errors.map((e) => e.stack);
+      throw new BadRequestError(errs);
+    }
+    await Job.remove(req.params.id);
+    return res.json({ deleted: req.params.id });
+  } catch (err) {
+    return next(err);
+  }
+});
 
 module.exports = router;

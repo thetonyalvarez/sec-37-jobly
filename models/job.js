@@ -28,7 +28,7 @@ class Job {
 
     return job;
   }
-  // TODO: add jobSearch schema.
+
   /** Queries all jobs.
    *
    * If query exists, it is first validated by jobSearch schema.
@@ -100,7 +100,7 @@ class Job {
         ORDER BY title`,
         searchValues
       );
-      console.debug("results", resultFiltered);
+      console.debug("results", resultFiltered.rows.length);
 
       if (resultFiltered.rows.length == 0) {
         throw new NotFoundError("Job not found.");
@@ -163,6 +163,7 @@ class Job {
 
   static async update(id, data) {
     if (!id) throw new BadRequestError(`Job id must be passed.`);
+    if (data.id) throw new BadRequestError(`Cannot update Job id.`);
 
     const { setCols, values } = sqlForPartialUpdate(data, {});
     const handleVarIdx = "$" + (values.length + 1);

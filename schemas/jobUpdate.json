@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "http://example.com/jobSearch.json",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "title": {
+      "type": "string",
+      "default": "",
+      "title": "The title Schema",
+      "examples": ["Conservator, furniture"]
+    },
+    "salary": {
+      "type": "integer",
+      "default": 0,
+      "title": "The salary Schema",
+      "examples": [110000]
+    },
+    "equity": {
+      "type": "string",
+      "title": "The equity Schema",
+      "pattern": "0|(0?\\.[0-9]+)",
+      "examples": ["0.001"]
+    }
+  }
+}
