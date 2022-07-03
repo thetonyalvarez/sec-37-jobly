@@ -38,9 +38,7 @@ class Job {
    * Query can include any or all of the following:
    * - title [string]: search for partial or full matches of title
    * - minSalary [int]: search for jobs that have at least this salary
-   * - maxSalary [int]: search for jobs that have at most this salary
-   * - minEquity [numeric]: search for jobs that have at least this equity
-   * - maxEquity [numeric]: search for jobs that have at most this equity
+   * - hasEquity [string]: search for jobs where equity equals "true"
    * - company_handle [varchar(25)]: search for partial or full matches of company
    *
    * If no query, then return all jobs in database.
@@ -49,15 +47,10 @@ class Job {
    * */
 
   static async findAll(query) {
-    let { title, minSalary, maxSalary, minEquity, maxEquity, company_handle } =
-      query;
+    let { title, minSalary, hasEquity, company_handle } = query;
 
     let searchCols = [];
     let searchValues = [];
-
-    if (minSalary > maxSalary || minEquity > maxEquity) {
-      throw new BadRequestError(`Minimum cannot exceed maximum.`);
-    }
 
     if (title !== undefined) {
       searchValues.push(`%${title}%`);
@@ -69,19 +62,9 @@ class Job {
       searchCols.push(`salary >= $${searchValues.length}`);
     }
 
-    if (maxSalary !== undefined) {
-      searchValues.push(maxSalary);
-      searchCols.push(`salary <= $${searchValues.length}`);
-    }
-
-    if (minEquity !== undefined) {
-      searchValues.push(minEquity);
-      searchCols.push(`equity >= $${searchValues.length}`);
-    }
-
-    if (maxEquity !== undefined) {
-      searchValues.push(maxEquity);
-      searchCols.push(`equity <= $${searchValues.length}`);
+    if (hasEquity == "true") {
+      searchValues.push(0);
+      searchCols.push(`equity > $${searchValues.length}`);
     }
 
     if (company_handle !== undefined) {

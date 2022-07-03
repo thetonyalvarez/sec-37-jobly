@@ -39,7 +39,7 @@ async function commonBeforeAll() {
     INSERT INTO jobs(title, salary, equity, company_handle)
     VALUES ('j1', 150000, 0.001, 'c1'),
            ('j2', 250000, 0.002, 'c2'),
-           ('j3', 350000, 0.003, 'c3')`);
+           ('j3', 350000, 0, 'c3')`);
 }
 
 async function commonBeforeEach() {

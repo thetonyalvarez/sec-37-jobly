@@ -67,7 +67,7 @@ describe("findAll", function () {
       {
         title: "j3",
         salary: 350000,
-        equity: "0.003",
+        equity: "0",
         company_handle: "c3",
       },
     ]);
@@ -93,7 +93,7 @@ describe("findAll", function () {
       {
         title: "j3",
         salary: 350000,
-        equity: "0.003",
+        equity: "0",
         company_handle: "c3",
       },
     ]);
@@ -107,93 +107,15 @@ describe("findAll", function () {
       {
         title: "j3",
         salary: 350000,
-        equity: "0.003",
+        equity: "0",
         company_handle: "c3",
       },
     ]);
   });
-  test("works: query for maxSalary param", async function () {
-    let q1 = { maxSalary: 300000 };
-    let q2 = { maxSalary: 200000 };
+  test("works: query for hasEquity param", async function () {
+    let q1 = { hasEquity: true };
     let jobQuery1 = await Job.findAll(q1);
-    let jobQuery2 = await Job.findAll(q2);
     expect(jobQuery1).toEqual([
-      {
-        title: "j1",
-        salary: 150000,
-        equity: "0.001",
-        company_handle: "c1",
-      },
-      {
-        title: "j2",
-        salary: 250000,
-        equity: "0.002",
-        company_handle: "c2",
-      },
-    ]);
-    expect(jobQuery2).toEqual([
-      {
-        title: "j1",
-        salary: 150000,
-        equity: "0.001",
-        company_handle: "c1",
-      },
-    ]);
-  });
-  test("works: query for minEquity param", async function () {
-    let q1 = { minEquity: "0.003" };
-    let q2 = { minEquity: "0.002" };
-    let jobQuery1 = await Job.findAll(q1);
-    let jobQuery2 = await Job.findAll(q2);
-    expect(jobQuery1).toEqual([
-      {
-        title: "j3",
-        salary: 350000,
-        equity: "0.003",
-        company_handle: "c3",
-      },
-    ]);
-    expect(jobQuery2).toEqual([
-      {
-        title: "j2",
-        salary: 250000,
-        equity: "0.002",
-        company_handle: "c2",
-      },
-      {
-        title: "j3",
-        salary: 350000,
-        equity: "0.003",
-        company_handle: "c3",
-      },
-    ]);
-  });
-  test("works: query for maxEquity param", async function () {
-    let q1 = { maxEquity: "0.003" };
-    let q2 = { maxEquity: "0.002" };
-    let jobQuery1 = await Job.findAll(q1);
-    let jobQuery2 = await Job.findAll(q2);
-    expect(jobQuery1).toEqual([
-      {
-        title: "j1",
-        salary: 150000,
-        equity: "0.001",
-        company_handle: "c1",
-      },
-      {
-        title: "j2",
-        salary: 250000,
-        equity: "0.002",
-        company_handle: "c2",
-      },
-      {
-        title: "j3",
-        salary: 350000,
-        equity: "0.003",
-        company_handle: "c3",
-      },
-    ]);
-    expect(jobQuery2).toEqual([
       {
         title: "j1",
         salary: 150000,
@@ -231,7 +153,7 @@ describe("findAll", function () {
       {
         title: "j3",
         salary: 350000,
-        equity: "0.003",
+        equity: "0",
         company_handle: "c3",
       },
     ]);
@@ -261,51 +183,6 @@ describe("findAll", function () {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
-  test("404: maxSalary query not found", async function () {
-    let q = { maxSalary: 100 };
-    try {
-      await Job.findAll(q);
-      fail();
-    } catch (err) {
-      expect(err instanceof NotFoundError).toBeTruthy();
-    }
-  });
-  test("404: minEquity query not found", async function () {
-    let q = { minEquity: "0.1" };
-    try {
-      await Job.findAll(q);
-      fail();
-    } catch (err) {
-      expect(err instanceof NotFoundError).toBeTruthy();
-    }
-  });
-  test("404: maxEquity query not found", async function () {
-    let q = { maxEquity: "0.0001" };
-    try {
-      await Job.findAll(q);
-      fail();
-    } catch (err) {
-      expect(err instanceof NotFoundError).toBeTruthy();
-    }
-  });
-  test("400: minSalary is greater than maxSalary", async function () {
-    let q = { minSalary: 200000, maxSalary: 150000 };
-    try {
-      await Job.findAll(q);
-      fail();
-    } catch (err) {
-      expect(err instanceof BadRequestError).toBeTruthy();
-    }
-  });
-  test("400: minEquity is greater than maxEquity", async function () {
-    let q = { minEquity: "0.002", maxEquity: "0.001" };
-    try {
-      await Job.findAll(q);
-      fail();
-    } catch (err) {
-      expect(err instanceof BadRequestError).toBeTruthy();
-    }
-  });
   test("works: title + minSalary search found", async function () {
     let q = { title: "j", minSalary: 200000 };
     let jobs = await Job.findAll(q);
@@ -319,43 +196,13 @@ describe("findAll", function () {
       {
         title: "j3",
         salary: 350000,
-        equity: "0.003",
+        equity: "0",
         company_handle: "c3",
       },
     ]);
   });
-  test("works: title + maxSalary search found", async function () {
-    let q = { title: "j", maxSalary: 300000 };
-    let jobs = await Job.findAll(q);
-    expect(jobs).toEqual([
-      {
-        title: "j1",
-        salary: 150000,
-        equity: "0.001",
-        company_handle: "c1",
-      },
-      {
-        title: "j2",
-        salary: 250000,
-        equity: "0.002",
-        company_handle: "c2",
-      },
-    ]);
-  });
-  test("works: title + minEquity search found", async function () {
-    let q = { title: "j", minEquity: "0.0025" };
-    let jobs = await Job.findAll(q);
-    expect(jobs).toEqual([
-      {
-        title: "j3",
-        salary: 350000,
-        equity: "0.003",
-        company_handle: "c3",
-      },
-    ]);
-  });
-  test("works: title + maxEquity search found", async function () {
-    let q = { title: "j", maxEquity: "0.0025" };
+  test("works: title + hasEquity search found", async function () {
+    let q = { title: "j", hasEquity: true };
     let jobs = await Job.findAll(q);
     expect(jobs).toEqual([
       {
@@ -385,13 +232,13 @@ describe("findAll", function () {
       {
         title: "j3",
         salary: 350000,
-        equity: "0.003",
+        equity: "0",
         company_handle: "c3",
       },
     ]);
   });
-  test("works: company_handle + maxSalary search found", async function () {
-    let q = { company_handle: "c", maxSalary: 300000 };
+  test("works: company_handle + hasEquity search found", async function () {
+    let q = { company_handle: "c", hasEquity: true };
     let jobs = await Job.findAll(q);
     expect(jobs).toEqual([
       {
@@ -405,72 +252,6 @@ describe("findAll", function () {
         salary: 250000,
         equity: "0.002",
         company_handle: "c2",
-      },
-    ]);
-  });
-  test("works: company_handle + minEquity search found", async function () {
-    let q = { company_handle: "c", minEquity: "0.0025" };
-    let jobs = await Job.findAll(q);
-    expect(jobs).toEqual([
-      {
-        title: "j3",
-        salary: 350000,
-        equity: "0.003",
-        company_handle: "c3",
-      },
-    ]);
-  });
-  test("works: company_handle + maxEquity search found", async function () {
-    let q = { company_handle: "c", maxEquity: "0.0025" };
-    let jobs = await Job.findAll(q);
-    expect(jobs).toEqual([
-      {
-        title: "j1",
-        salary: 150000,
-        equity: "0.001",
-        company_handle: "c1",
-      },
-      {
-        title: "j2",
-        salary: 250000,
-        equity: "0.002",
-        company_handle: "c2",
-      },
-    ]);
-  });
-  test("works: minSalary + maxSalary range found", async function () {
-    let q = { minSalary: 100000, maxSalary: 300000 };
-    let jobs = await Job.findAll(q);
-    expect(jobs).toEqual([
-      {
-        title: "j1",
-        salary: 150000,
-        equity: "0.001",
-        company_handle: "c1",
-      },
-      {
-        title: "j2",
-        salary: 250000,
-        equity: "0.002",
-        company_handle: "c2",
-      },
-    ]);
-  });
-  test("works: minEquity + maxEquity range found", async function () {
-    let q = { minEquity: "0.0015", maxEquity: "0.004" };
-    let jobs = await Job.findAll(q);
-    expect(jobs).toEqual([
-      {
-        title: "j2",
-        salary: 250000,
-        equity: "0.002",
-        company_handle: "c2",
-      },
-      {
-        title: "j3",
-        salary: 350000,
-        equity: "0.003",
-        company_handle: "c3",
       },
     ]);
   });
