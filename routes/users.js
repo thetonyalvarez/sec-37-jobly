@@ -11,6 +11,7 @@ const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
 const userNewSchema = require("../schemas/userNew.json");
 const userUpdateSchema = require("../schemas/userUpdate.json");
+const userApplySchema = require("../schemas/userApply.json");
 
 const router = express.Router();
 
@@ -102,6 +103,31 @@ router.patch("/:username", ensureAdmin, async function (req, res, next) {
     return next(err);
   }
 });
+
+
+/** POST /[username]/jobs/[job_id] => { applied: job_id } 
+ * 
+ * Only logged in user or admin can apply for a job
+ * 
+ * Authorization required: login
+*/
+
+router.post("/:username/jobs/:job_id", ensureMatchingUserOrAdmin, async function (req, res, next) {
+  try {
+    const validator = jsonschema.validate(req.params, userApplySchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
+
+    let { username, job_id } = req.params
+
+    const job = await User.apply(username, job_id)
+    return res.json({ applied: job })
+  } catch (err) {
+    return next(err);
+  }
+})
 
 
 /** DELETE /[username]  =>  { deleted: username }

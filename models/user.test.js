@@ -125,8 +125,25 @@ describe("findAll", function () {
         email: "u2@email.com",
         isAdmin: false,
       },
+      {
+        username: "u3",
+        firstName: "U3F",
+        lastName: "U3L",
+        email: "u3@email.com",
+        isAdmin: false,
+      },
     ]);
   });
+
+  test("fails: no users found", async function () {
+    await db.query(`DELETE FROM users;`);
+    try {
+      await User.findAll();
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  })
 });
 
 /************************************** get */
@@ -140,6 +157,22 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: [
+        expect.any(Number),
+        expect.any(Number)
+      ]
+    });
+  });
+
+  test("works when no jobs applied to", async function () {
+    let user = await User.get("u3");
+    expect(user).toEqual({
+      username: "u3",
+      firstName: "U3F",
+      lastName: "U3L",
+      email: "u3@email.com",
+      isAdmin: false,
+      jobs: []
     });
   });
 
@@ -209,13 +242,30 @@ describe("update", function () {
   });
 });
 
+/************************************** apply */
+
+describe("apply", function () {
+  test("works", async function () {
+    let resp = await User.apply("u1", 3);
+    expect(resp).toEqual(3);
+  });
+
+  test("fails: invalid data", async function () {
+    try {
+      await User.apply("u123123", 1);
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+});
+
 /************************************** remove */
 
 describe("remove", function () {
   test("works", async function () {
     await User.remove("u1");
-    const res = await db.query(
-        "SELECT * FROM users WHERE username='u1'");
+    const res = await db.query("SELECT * FROM users WHERE username='u1'");
     expect(res.rows.length).toEqual(0);
   });
 
