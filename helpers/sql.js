@@ -17,11 +17,11 @@ const { BadRequestError } = require("../expressError");
  * 
  * Arguments:
  * 1. dataToUpdate: JSON object of data to be queried
- * 2. jsToSql: JSON object that updates the inbound key with the match
+ * 2. jsToSql: JSON object that updates the inbound key with the matching
  * SQL column / key
  * 
  * Example: inbound data can be:
- * dataToUpdate = {"firstName": "testFName", "lastName", }
+ * dataToUpdate = {"firstName": "testFName", "lastName": "testLName" }
  * 
  * Throws BadRequestError if no data is passed.
  */

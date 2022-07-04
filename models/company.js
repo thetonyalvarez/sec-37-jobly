@@ -44,21 +44,76 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
+  /** Queries all companies.
    *
+   * If query exists, it is first validated by companySearch schema.
+   * If query is validated, then it returns results based on query filters.
+   * 
+   * Query can include any or all of the following:
+   * - name [string]: search for partial or full matches of company name
+   * - minEmployees [int]: search for companies that have at least this many employees
+   * - maxEmployees [int]: search for companies that have at most this many employees
+   * 
+   * If no query, then return all companies in database.
+   * 
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
-    return companiesRes.rows;
+  static async findAll(query) {
+    let { name, minEmployees, maxEmployees } = query;
+
+    let searchCols = [];
+    let searchValues = [];
+
+    if (minEmployees > maxEmployees) {
+      throw new BadRequestError(`Min. employees cannot exceed max employees.`);
+    }
+
+    if (name !== undefined) {
+      searchValues.push(`%${name}%`)
+      searchCols.push(`name ILIKE $${searchValues.length}`)
+    }
+
+    if (minEmployees !== undefined) {
+      searchValues.push(minEmployees)
+      searchCols.push(`num_employees >= $${searchValues.length}`)
+    }
+
+    if (maxEmployees !== undefined) {
+      searchValues.push(maxEmployees)
+      searchCols.push(`num_employees <= $${searchValues.length}`)
+    }
+
+    if (searchValues.length > 0) {
+      console.debug("searchValues")
+      let resultFiltered = await db.query(
+        `SELECT handle,
+                name,
+                description,
+                num_employees AS "numEmployees",
+                logo_url AS "logoUrl"
+        FROM companies
+        WHERE ${searchCols.join(' AND ')}
+        ORDER BY name`,
+        searchValues);
+
+        if (resultFiltered.rows.length == 0) {
+          throw new NotFoundError("Company name not found.")
+        }
+
+      return resultFiltered.rows;
+    }
+
+    let resultAll = await db.query(
+      `SELECT handle,
+              name,
+              description,
+              num_employees AS "numEmployees",
+              logo_url AS "logoUrl"
+      FROM companies
+      ORDER BY name`);
+
+    return resultAll.rows;
   }
 
   /** Given a company handle, return data about company.
