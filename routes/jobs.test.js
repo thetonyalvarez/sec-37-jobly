@@ -4,6 +4,7 @@ const request = require("supertest");
 
 const db = require("../db");
 const app = require("../app");
+const Job = require("../models/job.js");
 
 const {
   commonBeforeAll,
@@ -103,7 +104,7 @@ describe("GET /jobs", function () {
         {
           title: "j3",
           salary: 350000,
-          equity: "0.003",
+          equity: "0",
           company_handle: "c3",
         },
       ],
@@ -165,7 +166,7 @@ describe("GET /jobs", function () {
         {
           title: "j3",
           salary: 350000,
-          equity: "0.003",
+          equity: "0",
           company_handle: "c3",
         },
       ],
@@ -191,7 +192,7 @@ describe("GET /jobs", function () {
         {
           title: "j3",
           salary: 350000,
-          equity: "0.003",
+          equity: "0",
           company_handle: "c3",
         },
       ],
@@ -203,69 +204,6 @@ describe("GET /jobs", function () {
     expect(resp.statusCode).toEqual(404);
   });
 
-  test("works: query for maxSalary param", async function () {
-    const resp = await request(app).get("/jobs?maxSalary=150000");
-    expect(resp.body).toEqual({
-      jobs: [
-        {
-          title: "j1",
-          salary: 150000,
-          equity: "0.001",
-          company_handle: "c1",
-        },
-      ],
-    });
-  });
-
-  test("404: maxSalary query not found", async function () {
-    const resp = await request(app).get("/jobs?maxSalary=50");
-    expect(resp.statusCode).toEqual(404);
-  });
-
-  test("works: query for minEquity param", async function () {
-    const resp = await request(app).get("/jobs?minEquity=0.0015");
-    expect(resp.body).toEqual({
-      jobs: [
-        {
-          title: "j2",
-          salary: 250000,
-          equity: "0.002",
-          company_handle: "c2",
-        },
-        {
-          title: "j3",
-          salary: 350000,
-          equity: "0.003",
-          company_handle: "c3",
-        },
-      ],
-    });
-  });
-
-  test("404: minEquity query not found", async function () {
-    const resp = await request(app).get("/jobs?minEquity=1");
-    expect(resp.statusCode).toEqual(404);
-  });
-
-  test("works: query for maxEquity param", async function () {
-    const resp = await request(app).get("/jobs?maxEquity=0.0015");
-    expect(resp.body).toEqual({
-      jobs: [
-        {
-          title: "j1",
-          salary: 150000,
-          equity: "0.001",
-          company_handle: "c1",
-        },
-      ],
-    });
-  });
-
-  test("404: maxEquity query not found", async function () {
-    const resp = await request(app).get("/jobs?maxEquity=0.0000001");
-    expect(resp.statusCode).toEqual(404);
-  });
-
   test("works: title + minSalary search found", async function () {
     const resp = await request(app).get("/jobs?title=j&minSalary=300000");
     expect(resp.body).toEqual({
@@ -273,57 +211,15 @@ describe("GET /jobs", function () {
         {
           title: "j3",
           salary: 350000,
-          equity: "0.003",
+          equity: "0",
           company_handle: "c3",
         },
       ],
     });
   });
 
-  test("works: title + maxSalary search found", async function () {
-    const resp = await request(app).get("/jobs?title=j&maxSalary=150000");
-    expect(resp.body).toEqual({
-      jobs: [
-        {
-          title: "j1",
-          salary: 150000,
-          equity: "0.001",
-          company_handle: "c1",
-        },
-      ],
-    });
-  });
-
-  test("works: title + minEquity search found", async function () {
-    const resp = await request(app).get("/jobs?title=j&minEquity=0.0025");
-    expect(resp.body).toEqual({
-      jobs: [
-        {
-          title: "j3",
-          salary: 350000,
-          equity: "0.003",
-          company_handle: "c3",
-        },
-      ],
-    });
-  });
-
-  test("works: title + maxEquity search found", async function () {
-    const resp = await request(app).get("/jobs?title=j&maxEquity=0.0015");
-    expect(resp.body).toEqual({
-      jobs: [
-        {
-          title: "j1",
-          salary: 150000,
-          equity: "0.001",
-          company_handle: "c1",
-        },
-      ],
-    });
-  });
-
-  test("works: salary between minSalary + maxSalary range found", async function () {
-    const resp = await request(app).get("/jobs?minSalary=1&maxSalary=400000");
+  test("works: hasEquity filter works", async function () {
+    const resp = await request(app).get("/jobs?hasEquity=true");
     expect(resp.body).toEqual({
       jobs: [
         {
@@ -338,20 +234,31 @@ describe("GET /jobs", function () {
           equity: "0.002",
           company_handle: "c2",
         },
-        {
-          title: "j3",
-          salary: 350000,
-          equity: "0.003",
-          company_handle: "c3",
-        },
       ],
     });
   });
 
-  test("works: salary between minEquity + maxEquity range found", async function () {
-    const resp = await request(app).get(
-      "/jobs?minEquity=0.002&maxEquity=0.003"
-    );
+  test("404: no results found for hasEquity = true", async function () {
+    let updateData1 = {
+      title: "j1",
+      salary: 175000,
+      equity: "0",
+      company_handle: "c1",
+    };
+    let updateData2 = {
+      title: "j2",
+      salary: 175000,
+      equity: "0",
+      company_handle: "c2",
+    };
+    await Job.update(1, updateData1);
+    await Job.update(2, updateData2);
+    const resp = await request(app).get("/jobs?hasEquity=true");
+    expect(resp.statusCode).toEqual(404);
+  });
+
+  test("works: title + hasEquity filter works", async function () {
+    const resp = await request(app).get("/jobs?title=2&hasEquity=true");
     expect(resp.body).toEqual({
       jobs: [
         {
@@ -359,12 +266,6 @@ describe("GET /jobs", function () {
           salary: 250000,
           equity: "0.002",
           company_handle: "c2",
-        },
-        {
-          title: "j3",
-          salary: 350000,
-          equity: "0.003",
-          company_handle: "c3",
         },
       ],
     });
