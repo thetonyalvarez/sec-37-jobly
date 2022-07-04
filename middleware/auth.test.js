@@ -5,11 +5,14 @@ const { UnauthorizedError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
+  ensureAdmin,
+  ensureMatchingUserOrAdmin
 } = require("./auth");
 
 
 const { SECRET_KEY } = require("../config");
 const testJwt = jwt.sign({ username: "test", isAdmin: false }, SECRET_KEY);
+const testAdminJwt = jwt.sign({ username: "test_admin", isAdmin: true }, SECRET_KEY);
 const badJwt = jwt.sign({ username: "test", isAdmin: false }, "wrong");
 
 
@@ -61,7 +64,7 @@ describe("ensureLoggedIn", function () {
   test("works", function () {
     expect.assertions(1);
     const req = {};
-    const res = { locals: { user: { username: "test", is_admin: false } } };
+    const res = { locals: { user: { username: "test", isAdmin: false } } };
     const next = function (err) {
       expect(err).toBeFalsy();
     };
@@ -78,3 +81,89 @@ describe("ensureLoggedIn", function () {
     ensureLoggedIn(req, res, next);
   });
 });
+
+describe("ensureAdmin", function () {
+  test("works", function () {
+    expect.assertions(1);
+    const req = { headers: { authorization: `Bearer ${testAdminJwt}` } };
+    const res = { locals: { user: { username: "test_admin", isAdmin: true } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeFalsy();
+    };
+    ensureAdmin(req, res, next);
+  });
+  test("unauth if not admin", function () {
+    expect.assertions(1);
+    const req = { headers: { authorization: `Bearer ${testJwt}` } };
+    const res = { locals: { user: { username: "test_admin", isAdmin: false } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureAdmin(req, res, next);
+  });
+  test("unauth if invalid token", function () {
+    expect.assertions(1);
+    const req = { headers: { authorization: `Bearer ${badJwt}` } };
+    const res = { locals: { user: { username: "test", isAdmin: false } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureAdmin(req, res, next);
+  });
+})
+
+describe("ensureMatchingUserOrAdmin", function () {
+  test("works for admin", function () {
+    expect.assertions(1);
+    const req = { 
+      headers: { 
+        authorization: `Bearer ${testAdminJwt}` ,
+      },
+      params: {
+        username: "test"
+      }
+    };
+    const res = { locals: { user: { username: "test_admin", isAdmin: true } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeFalsy();
+    };
+    ensureMatchingUserOrAdmin(req, res, next);
+  });
+  test("works for matching user (non-admin)", function () {
+    expect.assertions(1);
+    const req = { 
+      headers: { authorization: `Bearer ${testJwt}`},
+      params: { username: "test" }
+    };
+    const res = { locals: { user: { username: "test", isAdmin: false } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeFalsy();
+    };
+    ensureMatchingUserOrAdmin(req, res, next);
+  });
+  test("unauth if not admin and not matching user", function () {
+    expect.assertions(1);
+    const req = { 
+      headers: { 
+        authorization: `Bearer ${testJwt}` ,
+      },
+      params: {
+        username: "test_admin"
+      }
+    };
+    const res = { locals: { user: { username: "test", isAdmin: false } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureMatchingUserOrAdmin(req, res, next);
+  });
+  test("unauth if invalid token", function () {
+    expect.assertions(1);
+    const req = { headers: { authorization: `Bearer ${badJwt}` } };
+    const res = { locals: { user: { username: "test", isAdmin: false } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureAdmin(req, res, next);
+  });
+})

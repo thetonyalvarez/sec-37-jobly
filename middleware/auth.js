@@ -35,10 +35,41 @@ function authenticateJWT(req, res, next) {
 
 function ensureLoggedIn(req, res, next) {
   try {
-    if (!res.locals.user) throw new UnauthorizedError();
+    if (!res.locals.user) throw new UnauthorizedError("Unauthorized", 401);
     return next();
   } catch (err) {
     return next(err);
+  }
+}
+
+/** Require admin user.
+ * 
+ * If not, raise 401.
+ */
+
+function ensureAdmin(req, res, next) {
+  try {
+    if (!res.locals.user || !res.locals.user.isAdmin) throw new UnauthorizedError("Unauthorized", 401);
+		return next();
+  } catch (err) {
+		return next(err);
+	}
+}
+
+/** Require curr user = target user, or admin user.
+ * 
+ * If not, raise 401.
+ */
+function ensureMatchingUserOrAdmin(req, res, next) {
+  let reqUser = req.params.username
+  let currUser = res.locals.user
+  try {
+    if (!(currUser && (currUser.isAdmin || reqUser == currUser.username))) {
+      throw new UnauthorizedError("Unauthorized", 401)
+    } 
+    return next();
+  } catch (err) {
+		return next(err);
   }
 }
 
@@ -46,4 +77,6 @@ function ensureLoggedIn(req, res, next) {
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
+  ensureAdmin,
+  ensureMatchingUserOrAdmin
 };
