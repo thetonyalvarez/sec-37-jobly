@@ -15,7 +15,6 @@ const companySearchSchema = require("../schemas/companySearch.json");
 
 const router = new express.Router();
 
-
 /** POST / { company } =>  { company }
  *
  * company should be { handle, name, description, numEmployees, logoUrl }
@@ -29,7 +28,7 @@ router.post("/", ensureAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, companyNewSchema);
     if (!validator.valid) {
-      const errs = validator.errors.map(e => e.stack);
+      const errs = validator.errors.map((e) => e.stack);
       throw new BadRequestError(errs);
     }
 
@@ -52,23 +51,23 @@ router.post("/", ensureAdmin, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-  let q = req.query
+  let q = req.query;
 
-  console.log("q", q)
+  console.log("q", q);
 
   // convert query param string to integers
   if (q.minEmployees !== undefined) {
-    q.minEmployees = Number(q.minEmployees)
+    q.minEmployees = Number(q.minEmployees);
   }
   if (q.maxEmployees !== undefined) {
-    q.maxEmployees = Number(q.maxEmployees)
+    q.maxEmployees = Number(q.maxEmployees);
   }
 
   try {
     // ensure query is validated using companySearch schema
     const validator = jsonschema.validate(req.query, companySearchSchema);
     if (!validator.valid) {
-      const errs = validator.errors.map(e => e.stack);
+      const errs = validator.errors.map((e) => e.stack);
       throw new BadRequestError(errs);
     }
     // pass query variable 'q' to sql query function
@@ -111,7 +110,7 @@ router.patch("/:handle", ensureAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, companyUpdateSchema);
     if (!validator.valid) {
-      const errs = validator.errors.map(e => e.stack);
+      const errs = validator.errors.map((e) => e.stack);
       throw new BadRequestError(errs);
     }
 
@@ -135,6 +134,5 @@ router.delete("/:handle", ensureAdmin, async function (req, res, next) {
     return next(err);
   }
 });
-
 
 module.exports = router;
