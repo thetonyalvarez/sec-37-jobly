@@ -31,7 +31,7 @@ class User {
                   email,
                   is_admin AS "isAdmin"
            FROM users
-           WHERE username = $1`,
+        WHERE username = $1`,
       [username]
     );
 
@@ -97,7 +97,8 @@ class User {
 
   /** Find all users.
    *
-   * Returns [{ username, first_name, last_name, email, is_admin }, ...]
+   * Returns [{ username, first_name, last_name, email, is_admin}, ...]
+   * 
    **/
 
   static async findAll() {
@@ -107,9 +108,11 @@ class User {
                   last_name AS "lastName",
                   email,
                   is_admin AS "isAdmin"
-           FROM users
-           ORDER BY username`
+      FROM users
+      ORDER BY username`
     );
+
+    if(!result.rows[0]) throw new NotFoundError("No users found.")
 
     return result.rows;
   }
@@ -124,21 +127,42 @@ class User {
 
   static async get(username) {
     const userRes = await db.query(
-      `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           WHERE username = $1`,
+      `SELECT u.username,
+              u.first_name AS "firstName",
+              u.last_name AS "lastName",
+              u.email,
+              u.is_admin AS "isAdmin",
+              a.username,
+              a.job_id AS "jobId"
+        FROM users u
+        LEFT JOIN applications a
+        ON u.username = a.username
+        WHERE u.username = $1
+      `,
       [username]
     );
 
-    const user = userRes.rows[0];
+    console.log(userRes.rows)
 
-    if (!user) throw new NotFoundError(`No user: ${username}`);
+    let jobIdMap;
 
-    return user;
+    if (!userRes.rows[0]) throw new NotFoundError(`No user: ${username}`);
+
+    if (!userRes.rows[0].jobId) {
+      jobIdMap = []
+    } else {
+      jobIdMap = userRes.rows.map((j) => j.jobId)
+    }
+
+    return {
+      username: username,
+      firstName: userRes.rows[0].firstName,
+      lastName: userRes.rows[0].lastName,
+      email: userRes.rows[0].email,
+      isAdmin: userRes.rows[0].isAdmin,
+      jobs: jobIdMap
+    }
+
   }
 
   /** Update user data with `data`.
