@@ -25,6 +25,11 @@ nodemon ./server.js
 
 This will add tables and records needed for this project, then launch the application on localhost using port 3001.
 
+# Database schema overview
+
+Here is a quick overview of the database schema for this project:
+![Database Schema](./jobly-schema.png)
+
 # Using this app
 
 To use this app, requests are made via cURL requests.
