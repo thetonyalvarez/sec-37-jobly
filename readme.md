@@ -5,6 +5,7 @@ A job application web app API project!
 This is a Node Express app project that uses JSON API for requests and PostgreSQL for database storage.
 
 - [Launch Project](#launch-project)
+- [Database schema overview](#database-schema-overview)
 - [Using This App](#using-this-app)
 - [Run Tests](#run-tests)
 - [Nice To Have](#nice-to-have)
